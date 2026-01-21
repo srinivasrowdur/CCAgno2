@@ -12,7 +12,7 @@ from dotenv import load_dotenv
 sys.path.insert(0, str(Path(__file__).parent / "src"))
 
 from architecture_agent import create_architecture_agent, DiagramRequest
-from diagram_generator import DiagramGenerator
+from nano_banana_generator import NanoBananaGenerator
 from templates import get_template_names, get_template
 
 # Load environment variables
@@ -104,7 +104,7 @@ def main():
     # Header
     st.markdown('<h1 class="main-header">🏗️ Architecture Diagram Generator</h1>', unsafe_allow_html=True)
     st.markdown(
-        '<p class="sub-header">Create professional architecture diagrams using AI-powered Agno Agents with Google Gemini</p>',
+        '<p class="sub-header">Create professional architecture diagrams using Agno Agents and Google Nano Banana (Gemini Image Generation)</p>',
         unsafe_allow_html=True
     )
 
@@ -151,8 +151,8 @@ def main():
         st.markdown("""
         This app uses:
         - **Agno Agentic SDK** for AI orchestration
-        - **Google Gemini** for intelligent diagram generation
-        - **Diagrams library** for professional visualization
+        - **Google Gemini** for intelligent prompt generation
+        - **Nano Banana (Gemini Image)** for professional diagram generation
 
         Created with ❤️ by Claude
         """)
@@ -254,30 +254,30 @@ def main():
                         components=components if components else None
                     )
 
-                    # Generate diagram code
-                    response = agent.generate_diagram_code(request)
+                    # Generate image prompt
+                    response = agent.generate_image_prompt(request)
                     st.session_state.diagram_response = response
 
                     # Display progress
-                    st.success("✅ Diagram code generated!")
+                    st.success("✅ Image prompt generated!")
 
                 except Exception as e:
-                    st.error(f"❌ Error generating diagram code: {str(e)}")
+                    st.error(f"❌ Error generating image prompt: {str(e)}")
                     st.stop()
 
-            with st.spinner("🎨 Creating professional diagram..."):
+            with st.spinner("🎨 Generating diagram with Nano Banana (Gemini Image)..."):
                 try:
-                    # Generate the actual diagram
-                    generator = DiagramGenerator(output_dir="outputs")
+                    # Generate the actual diagram using Nano Banana
+                    generator = NanoBananaGenerator(api_key=google_api_key, output_dir="outputs")
                     success, output_path, error = generator.generate_diagram(
-                        response.diagram_code,
+                        prompt=response.image_prompt,
                         output_filename="architecture_diagram"
                     )
 
                     if success:
                         st.session_state.generated_diagram = output_path
                         st.balloons()
-                        st.success("🎉 Diagram generated successfully!")
+                        st.success("🎉 Diagram generated successfully with Nano Banana!")
                     else:
                         st.error(f"❌ Error generating diagram: {error}")
                         st.stop()
@@ -316,25 +316,26 @@ def main():
                         st.markdown(f"- {practice}")
 
     with tab2:
-        st.subheader("📖 Generated Python Code")
+        st.subheader("📖 Generated Image Prompt")
 
         if st.session_state.diagram_response:
-            st.markdown("This is the Python code generated to create your diagram:")
+            st.markdown("This is the detailed prompt used by Nano Banana to generate your diagram:")
 
-            st.code(
-                st.session_state.diagram_response.diagram_code,
-                language="python",
-                line_numbers=True
+            st.text_area(
+                label="Image Prompt",
+                value=st.session_state.diagram_response.image_prompt,
+                height=300,
+                disabled=True
             )
 
             st.download_button(
-                label="💾 Download Code",
-                data=st.session_state.diagram_response.diagram_code,
-                file_name="architecture_diagram.py",
-                mime="text/x-python",
+                label="💾 Download Prompt",
+                data=st.session_state.diagram_response.image_prompt,
+                file_name="architecture_diagram_prompt.txt",
+                mime="text/plain",
             )
         else:
-            st.info("Generate a diagram first to see the code here.")
+            st.info("Generate a diagram first to see the prompt here.")
 
     with tab3:
         st.subheader("📚 Architecture Patterns Gallery")
